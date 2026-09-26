@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Sanal ortam
+venv/
+.venv/
+env/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Sistem dosyaları
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

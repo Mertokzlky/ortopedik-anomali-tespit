@@ -22,6 +22,14 @@ def resim_goster(dosya_adi, genislik=None, altyazi=None):
         else:
             st.image(img, use_container_width=True, caption=altyazi)
 
+def araligi_kontrol_et(df, kolon_adi, deger, etiket):
+    if df is None:
+        return
+    p05 = df[kolon_adi].quantile(0.05)
+    p95 = df[kolon_adi].quantile(0.95)
+    if deger < p05 or deger > p95:
+        st.warning(f"⚠️ {etiket} değeri, hastaların %90'ının bulunduğu tipik aralığın ({p05:.1f} - {p95:.1f}) dışında. Uç bir değer.")
+
 
 @st.cache_data
 def veriyi_yukle(dosya_yolu):
@@ -42,6 +50,11 @@ try:
 except Exception as e:
     st.error(f"Model dosyaları yüklenemedi: {e}\n\nLütfen önce 'model_egit.py' dosyasını çalıştırın.")
     st.stop()
+
+try:
+    df_referans = veriyi_yukle("column_2C.csv") if os.path.exists("column_2C.csv") else None
+except Exception:
+    df_referans = None
 
 # --- BAŞLIK KISMI ---
 col_logo, col_baslik = st.columns([1, 4])
@@ -71,6 +84,13 @@ with tab1:
         s_egim = st.slider('Sakral Eğim', 13.0, 122.0, 40.0)
         p_yaricap = st.slider('Pelvik Yarıçap', 70.0, 164.0, 110.0)
         s_derece = st.slider('Spondilolistezis Derecesi', -11.0, 419.0, 10.0)
+
+        araligi_kontrol_et(df_referans, 'Pelvik_İnsidans', p_insidans, 'Pelvik İnsidans')
+        araligi_kontrol_et(df_referans, 'Pelvik_Eğim', p_egim, 'Pelvik Eğim')
+        araligi_kontrol_et(df_referans, 'Lumbar_Lordoz_Açısı', l_lordoz, 'Lumbar Lordoz Açısı')
+        araligi_kontrol_et(df_referans, 'Sakral_Eğim', s_egim, 'Sakral Eğim')
+        araligi_kontrol_et(df_referans, 'Pelvik_Yarıçap', p_yaricap, 'Pelvik Yarıçap')
+        araligi_kontrol_et(df_referans, 'Spondilolistezis_Derecesi', s_derece, 'Spondilolistezis Derecesi')
 
         input_df = pd.DataFrame({
             'Pelvik_İnsidans': [p_insidans],

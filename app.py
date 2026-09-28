@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
 from PIL import Image 
+from toplu_tahmin import csv_oku, ozellikleri_hazirla, tahmin_et, CSVHatasi, OZELLIKLER
 
 # --- AYARLAR ---
 st.set_page_config(page_title="Fizik Tedavi KDS", page_icon="🏥", layout="wide")
@@ -64,7 +65,7 @@ with col_baslik:
     st.title("🏥 Ortopedik Anomali Tespit Sistemi")
     st.markdown("**Makine Öğrenmesi Destekli Karar Destek Sistemi**")
 
-tab1, tab2 = st.tabs(["🩺 Tahmin Sistemi", "📊 Veri Analizi ve Performans"])
+tab1, tab2, tab3 = st.tabs(["🩺 Tahmin Sistemi", "📊 Veri Analizi ve Performans", "📁 Toplu Tahmin"])
 
 # ==========================================
 # SEKME 1: TAHMİN SİSTEMİ
@@ -228,3 +229,55 @@ with tab2:
         
     else:
         st.error(f"'{dosya_yolu}' dosyası bulunamadı! Lütfen CSV dosyasını klasöre atın.")
+
+# ==========================================
+# SEKME 3: TOPLU TAHMİN (CSV YÜKLEME)
+# ==========================================
+with tab3:
+    st.header("Toplu Tahmin (CSV Yükleme)")
+    st.write("Birden fazla hastanın ölçümlerini içeren bir CSV dosyası yükleyin; her satır için tahmin üretilir.")
+    st.markdown("**Dosyada şu 6 sütun bulunmalıdır** (Türkçe başlıklar veya orijinal veri setinin İngilizce başlıkları kabul edilir):")
+    st.code(", ".join(OZELLIKLER), language=None)
+    st.caption("Ek sütunlar (ör. hasta numarası) silinmez, sonuç tablosunda korunur. "
+               "Virgül veya noktalı virgülle ayrılmış dosyalar okunabilir.")
+
+    if df_referans is not None:
+        ornek_csv = df_referans.drop(columns="Durum").sample(5, random_state=1)
+        st.download_button(
+            "📄 Örnek CSV şablonunu indir",
+            data=ornek_csv.to_csv(index=False).encode("utf-8-sig"),
+            file_name="ornek_hasta_verisi.csv",
+            mime="text/csv",
+        )
+
+    yuklenen = st.file_uploader("CSV dosyası seçin", type=["csv"])
+
+    if yuklenen is not None:
+        try:
+            df_ham = csv_oku(yuklenen.getvalue())
+            X_toplu, atilan = ozellikleri_hazirla(df_ham)
+        except CSVHatasi as hata:
+            st.error(f"❌ {hata}")
+        else:
+            sonuc = tahmin_et(model, X_toplu, df_ham)
+
+            if atilan:
+                gosterilen = ", ".join(str(n) for n in atilan[:10])
+                fazla = f" ve {len(atilan) - 10} satır daha" if len(atilan) > 10 else ""
+                st.warning(f"⚠️ {len(atilan)} satır eksik veya sayısal olmayan değer içerdiği için atlandı "
+                           f"(CSV satır no: {gosterilen}{fazla}).")
+
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Toplam Hasta", len(sonuc))
+            c2.metric("Normal", int((sonuc["Tahmin"] == "Normal").sum()))
+            c3.metric("Anormal (Riskli)", int((sonuc["Tahmin"] == "Anormal").sum()))
+
+            st.dataframe(sonuc, hide_index=True)
+            st.download_button(
+                "⬇️ Sonuçları CSV olarak indir",
+                data=sonuc.to_csv(index=False).encode("utf-8-sig"),
+                file_name="toplu_tahmin_sonuclari.csv",
+                mime="text/csv",
+                type="primary",
+            )
+            st.caption("Bu sonuçlar karar destek amaçlıdır, tanı yerine geçmez. Uzman hekim kontrolü önerilir.")

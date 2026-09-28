@@ -4,7 +4,7 @@ Makine öğrenmesi destekli bir **karar destek sistemi (KDS)**: hastaların rady
 
 > *English:* A machine-learning decision-support system that classifies spinal condition (Normal / Abnormal) from biomechanical measurements, built with scikit-learn and an interactive Streamlit UI.
 
-🔗 **Canlı demo:** https://ortopedik-anomali-tespit.streamlit.app/
+🔗 **Canlı demo:** _(bkz. "Dağıtım" bölümü — Streamlit Community Cloud'a yayınlandıktan sonra buraya eklenecek)_
 
 ![Tahmin ekranı](docs/screenshots/tahmin-sistemi.png)
 
@@ -16,6 +16,8 @@ Makine öğrenmesi destekli bir **karar destek sistemi (KDS)**: hastaların rady
 - 🔥 **Korelasyon matrisi:** özellikler arasındaki ilişkiyi ısı haritasıyla gösterir
 - 🧩 **Karmaşıklık matrisi (confusion matrix):** modelin doğru/yanlış tahmin dağılımı
 - ⚙️ **3 algoritma karşılaştırması:** Random Forest, SVM ve KNN eğitilip test başarıları karşılaştırılır
+- 📁 **Toplu tahmin:** birden fazla hastanın verisini içeren bir CSV dosyası yükleyip hepsi için aynı anda tahmin alma, sonuçları CSV olarak indirme
+- ⚠️ **Uç değer uyarısı:** girilen bir ölçüm, hastaların %90'ının bulunduğu tipik aralığın dışındaysa kullanıcı uyarılır
 
 | Tahmin sonucu | Korelasyon matrisi |
 | --- | --- |
@@ -29,13 +31,15 @@ Makine öğrenmesi destekli bir **karar destek sistemi (KDS)**: hastaların rady
 
 ## Model performansı
 
-| Algoritma | Test Doğruluğu |
-| --- | --- |
-| **KNN (En Yakın Komşu)** 🏆 | **%83.87** |
-| SVM (Destek Vektör) | %80.65 |
-| Random Forest | %77.42 |
+| Algoritma | Test Doğruluğu (tek ayrım) | 5-Katlı Çapraz Doğrulama |
+| --- | --- | --- |
+| **KNN (En Yakın Komşu)** 🏆 | **%83.87** | %84.19 (± %2.96) |
+| SVM (Destek Vektör) | %80.65 | %85.48 (± %3.68) |
+| Random Forest | %77.42 | %84.19 (± %3.13) |
 
 `model_egit.py` çalıştırıldığında veriler %80/%20 (eğitim/test) olarak bölünür (`random_state=42`, tekrarlanabilir sonuçlar için), üç algoritma da eğitilir ve en başarılı model (`fiziktedavi_model.pkl`) ile tüm skorlar (`model_skorlari.pkl`) diske kaydedilir.
+
+Tek bir train/test ayrımı şansa bağlı sonuç verebileceğinden, aynı zamanda **5 katlı çapraz doğrulama** (`StratifiedKFold` + `cross_val_score`) da uygulanır: veri 5 farklı şekilde bölünüp her model 5 kez test edilir. Sonuçlar tek ayrımla tutarlı çıkmıştır; SVM'in çapraz doğrulama ortalaması en yüksek olsa da (%85.48), KNN tek ayrımda daha yüksek skor verdiği ve olasılık tahminlerinde daha kararlı olduğu için şampiyon model olarak seçilmeye devam etmektedir.
 
 ## Teknolojiler
 
@@ -78,6 +82,7 @@ python model_egit.py
 ortopedik-anomali-tespit/
 ├── app.py                 # Streamlit arayüzü (tahmin + veri analizi sekmeleri)
 ├── model_egit.py          # Veriyi okuyup 3 algoritmayı eğiten, en iyisini kaydeden betik
+├── toplu_tahmin.py        # CSV ile toplu tahmin için yardımcı fonksiyonlar (pytest ile test edilir)
 ├── column_2C.csv          # Vertebral Column veri seti (310 kayıt)
 ├── fiziktedavi_model.pkl  # Eğitilmiş en iyi model (KNN)
 ├── model_skorlari.pkl     # Üç algoritmanın test başarı oranları
@@ -95,9 +100,10 @@ ortopedik-anomali-tespit/
 ## Geliştirme fikirleri
 
 - Görsel özelliklerin (banner, anatomi referans görseli) eklenmesi
-- Model karşılaştırmasına çapraz doğrulama (cross-validation) eklenmesi
-- Kullanıcının girdiği verilerin normal aralık dışına çıkması durumunda uyarı gösterilmesi
+- 3 sınıflı veri setine (Normal / Disk Hernisi / Spondilolistezis) geçiş
+- Tahmine hangi ölçümün ne kadar etki ettiğini gösteren açıklanabilirlik (feature importance) grafiği
 - `pytest` ile modelin temel sağlık kontrollerinin (ör. bilinen bir girdi için beklenen sınıfı döndürmesi) test edilmesi
+- GitHub Actions ile testlerin her push'ta otomatik çalıştırılması
 
 ## Sorumluluk reddi
 
@@ -108,3 +114,4 @@ Bu proje bir üniversite dersi kapsamında geliştirilmiş akademik bir çalış
 **Mert Ali Kızılkaya** — Yazılım Mühendisliği öğrencisi
 GitHub: [@mertokzlky](https://github.com/mertokzlky)
 
+Görsel Programlama dersi final projesi olarak geliştirilmiştir.

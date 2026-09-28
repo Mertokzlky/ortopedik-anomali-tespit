@@ -242,7 +242,7 @@ with tab3:
                "Virgül veya noktalı virgülle ayrılmış dosyalar okunabilir.")
 
     if df_referans is not None:
-        ornek_csv = df_referans.drop(columns="Durum").sample(5, random_state=1)
+        ornek_csv = df_referans.drop(columns="Durum").sample(5)
         st.download_button(
             "📄 Örnek CSV şablonunu indir",
             data=ornek_csv.to_csv(index=False).encode("utf-8-sig"),

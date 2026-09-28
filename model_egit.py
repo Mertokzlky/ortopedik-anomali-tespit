@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
@@ -46,6 +46,15 @@ if os.path.exists(dosya_adi):
         basari = accuracy_score(y_test, y_pred)
         sonuclar[isim] = basari
         print(f"👉 {isim} Başarısı: %{basari * 100:.2f}")
+
+    # ÇAPRAZ DOĞRULAMA (5 katlı, her katta sınıf oranı korunur)
+    # Tek bir train/test ayrımı şansa bağlı olabilir; bu yüzden tüm veri
+    # 5 farklı şekilde bölünüp her model 5 kez test edilir.
+    print("\n📊 5-Katlı Çapraz Doğrulama (tüm veri üzerinde):")
+    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    for isim, model in modeller.items():
+        kat_skorlari = cross_val_score(model, X, y, cv=skf, scoring="accuracy")
+        print(f"👉 {isim}: %{kat_skorlari.mean() * 100:.2f} (± %{kat_skorlari.std() * 100:.2f})")
 
     en_iyi_model_ismi = max(sonuclar, key=sonuclar.get)
     en_iyi_model = modeller[en_iyi_model_ismi]

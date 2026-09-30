@@ -98,16 +98,23 @@ def ozellikleri_hazirla(df):
     return X, atilan_satirlar
 
 
-def tahmin_et(model, X, kaynak_df):
+def tahmin_et(model, X, kaynak_df, etiket_haritasi=None):
     """Her geçerli satır için tahmin ve güven oranı üretir.
 
     Kullanıcının dosyasındaki tüm orijinal sütunlar (ör. hasta numarası)
     korunur; sağa 'Tahmin' ve 'Güven Oranı (%)' sütunları eklenir.
+
+    etiket_haritasi: modelin ürettiği ham sınıf adını (ör. 'Abnormal',
+    'Disk_Hernia') ekranda gösterilecek Türkçe adla eşleştirir. Hem 2
+    sınıflı hem 3 sınıflı model için kullanılabilir.
     """
     tahmin = model.predict(X)
     guven = model.predict_proba(X).max(axis=1) * 100
 
     sonuc = kaynak_df.loc[X.index].copy()
-    sonuc['Tahmin'] = pd.Series(tahmin, index=X.index).replace({'Abnormal': 'Anormal'})
+    tahmin_serisi = pd.Series(tahmin, index=X.index)
+    if etiket_haritasi:
+        tahmin_serisi = tahmin_serisi.replace(etiket_haritasi)
+    sonuc['Tahmin'] = tahmin_serisi
     sonuc['Güven Oranı (%)'] = np.round(guven, 1)
     return sonuc

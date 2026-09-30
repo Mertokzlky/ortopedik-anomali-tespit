@@ -7,27 +7,43 @@ from sklearn.metrics import accuracy_score
 import joblib
 import os
 
-dosya_adi = "column_2C.csv"
+OZELLIK_ISIMLERI = [
+    'Pelvik_İnsidans',
+    'Pelvik_Eğim',
+    'Lumbar_Lordoz_Açısı',
+    'Sakral_Eğim',
+    'Pelvik_Yarıçap',
+    'Spondilolistezis_Derecesi',
+]
 
-print("Model eğitimi başlıyor...")
 
-if os.path.exists(dosya_adi):
+def modeli_egit(dosya_adi, model_dosya_adi, skor_dosya_adi, baslik, stratify=False):
+    """Bir veri setini okuyup 3 algoritmayı eğitir, çapraz doğrulama yapar
+    ve en başarılı modeli diske kaydeder. Hem 2 sınıflı (column_2C.csv)
+    hem de 3 sınıflı (column_3C.csv) veri seti için kullanılır.
+
+    stratify=True: az örnekli bir sınıf (ör. 3 sınıflı veri setindeki
+    60 kişilik Disk Hernisi grubu) test/eğitim ayrımında dengeli
+    dağılsın diye kullanılır. 2 sınıflı model için mevcut sonuçlarla
+    (README'deki skorlar) tutarlılığı korumak amacıyla kapalı bırakıldı.
+    """
+
+    print(f"\n{'=' * 50}")
+    print(f"{baslik}")
+    print(f"{'=' * 50}")
+
+    if not os.path.exists(dosya_adi):
+        print(f"HATA: '{dosya_adi}' dosyası klasörde bulunamadı! Lütfen ismini kontrol et.")
+        return
+
     df = pd.read_csv(dosya_adi)
-    
-    df.columns = [
-        'Pelvik_İnsidans', 
-        'Pelvik_Eğim', 
-        'Lumbar_Lordoz_Açısı', 
-        'Sakral_Eğim', 
-        'Pelvik_Yarıçap', 
-        'Spondilolistezis_Derecesi', 
-        'Durum'
-    ]
-    
+    df.columns = OZELLIK_ISIMLERI + ['Durum']
+
     # VERİYİ HAZIRLA
     X = df.drop('Durum', axis=1)
     y = df['Durum']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y if stratify else None)
 
     # MODELLERİ EĞİT
     modeller = {
@@ -37,9 +53,10 @@ if os.path.exists(dosya_adi):
     }
 
     sonuclar = {}
-    
-    print(f"Toplam {len(df)} kayıt üzerinde eğitim yapılıyor...")
-    
+
+    print(f"Toplam {len(df)} kayıt üzerinde eğitim yapılıyor "
+          f"({y.nunique()} sınıf: {', '.join(sorted(y.unique()))})...")
+
     for isim, model in modeller.items():
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
@@ -58,12 +75,31 @@ if os.path.exists(dosya_adi):
 
     en_iyi_model_ismi = max(sonuclar, key=sonuclar.get)
     en_iyi_model = modeller[en_iyi_model_ismi]
-    
+
     print(f"\n🏆 ŞAMPİYON MODEL: {en_iyi_model_ismi}")
-    
-    joblib.dump(en_iyi_model, 'fiziktedavi_model.pkl')
-    joblib.dump(sonuclar, 'model_skorlari.pkl')
-    print("💾 Model ve skorlar başarıyla kaydedildi!")
-    
-else:
-    print(f"HATA: '{dosya_adi}' dosyası klasörde bulunamadı! Lütfen ismini kontrol et.")
+
+    joblib.dump(en_iyi_model, model_dosya_adi)
+    joblib.dump(sonuclar, skor_dosya_adi)
+    print(f"💾 Model → {model_dosya_adi}, skorlar → {skor_dosya_adi} olarak kaydedildi!")
+
+
+if __name__ == "__main__":
+    print("Model eğitimi başlıyor...")
+
+    modeli_egit(
+        dosya_adi="column_2C.csv",
+        model_dosya_adi="fiziktedavi_model.pkl",
+        skor_dosya_adi="model_skorlari.pkl",
+        baslik="2 SINIFLI MODEL (Normal / Anormal)",
+        stratify=False,
+    )
+
+    modeli_egit(
+        dosya_adi="column_3C.csv",
+        model_dosya_adi="fiziktedavi_model_3sinif.pkl",
+        skor_dosya_adi="model_skorlari_3sinif.pkl",
+        baslik="3 SINIFLI MODEL (Normal / Disk Hernisi / Spondilolistezis)",
+        stratify=True,
+    )
+
+    print("\n✅ Tüm modeller eğitildi.")

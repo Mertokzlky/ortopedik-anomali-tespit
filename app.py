@@ -6,6 +6,7 @@ import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
+from sklearn.inspection import permutation_importance
 from PIL import Image
 from toplu_tahmin import csv_oku, ozellikleri_hazirla, tahmin_et, CSVHatasi, OZELLIKLER
 
@@ -269,6 +270,41 @@ with tab2:
             st.pyplot(fig)
 
         st.caption("ℹ️ Koyu mavi kutular modelin doğru bildiği hasta sayılarını gösterir.")
+
+        st.divider()
+
+        # 7. BÖLÜM: ÖZELLİK ÖNEMİ (AÇIKLANABİLİRLİK)
+        st.subheader("7. Özellik Önemi (Açıklanabilirlik)")
+        st.markdown("""
+        KNN ve SVM gibi modellerin (Random Forest'ın aksine) doğrudan bir "özellik önemi" değeri yoktur.
+        Bunu ölçmek için **Permutation Importance** yöntemi kullanılıyor: bir özelliğin değerleri
+        veri setinde rastgele karıştırılıyor, modelin başarısı ne kadar düşerse o özellik tahmin için
+        o kadar önemli demektir. Bu yöntem her model türüyle (KNN, SVM, Random Forest) çalışır.
+        """)
+
+        with st.spinner("Özellik önemleri hesaplanıyor..."):
+            onem = permutation_importance(
+                model, X_all, y_all, n_repeats=10, random_state=42, scoring="accuracy")
+
+        onem_df = pd.DataFrame({
+            "Özellik": X_all.columns,
+            "Önem": onem.importances_mean,
+        }).sort_values("Önem", ascending=False).set_index("Özellik")
+
+        col_onem1, col_onem2 = st.columns([2, 1])
+        with col_onem1:
+            st.bar_chart(onem_df)
+            st.caption("ℹ️ Çubuk ne kadar uzunsa, o ölçüm modelin doğru tahmin yapabilmesi için o kadar "
+                       "kritik demektir (özellik karıştırıldığında doğruluk o kadar düşüyor).")
+        with col_onem2:
+            en_onemli = onem_df.index[0]
+            st.info(f"""
+            **💡 Analiz İpucu:**
+            **{en_onemli}**, diğer tüm özelliklerden açık ara daha belirleyici çıkıyor.
+
+            Bu tıbbi olarak da beklenen bir sonuç: bu ölçüm, adından da (Spondilolistezis = omur
+            kayması) anlaşılacağı gibi doğrudan hastalığın kendisini tanımlıyor.
+            """)
 
     else:
         st.error(f"'{dosya_yolu}' dosyası bulunamadı! Lütfen CSV dosyasını klasöre atın.")

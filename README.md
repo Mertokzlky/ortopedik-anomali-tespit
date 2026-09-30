@@ -4,7 +4,7 @@ Makine öğrenmesi destekli bir **karar destek sistemi (KDS)**: hastaların rady
 
 > *English:* A machine-learning decision-support system that classifies spinal condition (Normal / Abnormal) from biomechanical measurements, built with scikit-learn and an interactive Streamlit UI.
 
-🔗 **Canlı demo:** https://ortopedik-anomali-tespit.streamlit.app/
+🔗 **Canlı demo:** _(bkz. "Dağıtım" bölümü — Streamlit Community Cloud'a yayınlandıktan sonra buraya eklenecek)_
 
 ![Tahmin ekranı](docs/screenshots/tahmin-sistemi.png)
 
@@ -16,6 +16,7 @@ Makine öğrenmesi destekli bir **karar destek sistemi (KDS)**: hastaların rady
 - 🔥 **Korelasyon matrisi:** özellikler arasındaki ilişkiyi ısı haritasıyla gösterir
 - 🧩 **Karmaşıklık matrisi (confusion matrix):** modelin doğru/yanlış tahmin dağılımı
 - ⚙️ **3 algoritma karşılaştırması:** Random Forest, SVM ve KNN eğitilip test başarıları karşılaştırılır
+- 🔍 **Açıklanabilirlik:** Permutation Importance yöntemiyle hangi ölçümün tahmine ne kadar etki ettiğini gösteren grafik (KNN/SVM gibi modellerde de çalışır)
 - 🔀 **2 sınıf / 3 sınıf modu:** kullanıcı, Normal/Anormal (2 sınıf) veya Normal/Disk Hernisi/Spondilolistezis (3 sınıf) modelleri arasında geçiş yapabilir; tüm sekmeler (tahmin, analiz, toplu tahmin) seçilen moda göre çalışır
 - 📁 **Toplu tahmin:** birden fazla hastanın verisini içeren bir CSV dosyası yükleyip hepsi için aynı anda tahmin alma, sonuçları CSV olarak indirme
 - ⚠️ **Uç değer uyarısı:** girilen bir ölçüm, hastaların %90'ının bulunduğu tipik aralığın dışındaysa kullanıcı uyarılır
@@ -116,7 +117,6 @@ ortopedik-anomali-tespit/
 ## Geliştirme fikirleri
 
 - Görsel özelliklerin (banner, anatomi referans görseli) eklenmesi
-- Tahmine hangi ölçümün ne kadar etki ettiğini gösteren açıklanabilirlik (feature importance) grafiği
 - `pytest` ile modelin temel sağlık kontrollerinin (ör. bilinen bir girdi için beklenen sınıfı döndürmesi) test edilmesi
 - GitHub Actions ile testlerin her push'ta otomatik çalıştırılması
 
@@ -128,5 +128,3 @@ Bu proje bir üniversite dersi kapsamında geliştirilmiş akademik bir çalış
 
 **Mert Ali Kızılkaya** — Yazılım Mühendisliği öğrencisi
 GitHub: [@mertokzlky](https://github.com/mertokzlky)
-
-Görsel Programlama dersi final projesi olarak geliştirilmiştir.

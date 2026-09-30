@@ -16,6 +16,7 @@ Makine öğrenmesi destekli bir **karar destek sistemi (KDS)**: hastaların rady
 - 🔥 **Korelasyon matrisi:** özellikler arasındaki ilişkiyi ısı haritasıyla gösterir
 - 🧩 **Karmaşıklık matrisi (confusion matrix):** modelin doğru/yanlış tahmin dağılımı
 - ⚙️ **3 algoritma karşılaştırması:** Random Forest, SVM ve KNN eğitilip test başarıları karşılaştırılır
+- 🔀 **2 sınıf / 3 sınıf modu:** kullanıcı, Normal/Anormal (2 sınıf) veya Normal/Disk Hernisi/Spondilolistezis (3 sınıf) modelleri arasında geçiş yapabilir; tüm sekmeler (tahmin, analiz, toplu tahmin) seçilen moda göre çalışır
 - 📁 **Toplu tahmin:** birden fazla hastanın verisini içeren bir CSV dosyası yükleyip hepsi için aynı anda tahmin alma, sonuçları CSV olarak indirme
 - ⚠️ **Uç değer uyarısı:** girilen bir ölçüm, hastaların %90'ının bulunduğu tipik aralığın dışındaysa kullanıcı uyarılır
 
@@ -41,6 +42,18 @@ Makine öğrenmesi destekli bir **karar destek sistemi (KDS)**: hastaların rady
 
 Tek bir train/test ayrımı şansa bağlı sonuç verebileceğinden, aynı zamanda **5 katlı çapraz doğrulama** (`StratifiedKFold` + `cross_val_score`) da uygulanır: veri 5 farklı şekilde bölünüp her model 5 kez test edilir. Sonuçlar tek ayrımla tutarlı çıkmıştır; SVM'in çapraz doğrulama ortalaması en yüksek olsa da (%85.48), KNN tek ayrımda daha yüksek skor verdiği ve olasılık tahminlerinde daha kararlı olduğu için şampiyon model olarak seçilmeye devam etmektedir.
 
+#### 3 Sınıflı Model (Normal / Disk Hernisi / Spondilolistezis)
+
+Aynı 310 kayıt, bu kez Normal (100), Disk Hernisi (60) ve Spondilolistezis (150) olmak üzere 3 ayrı sınıfla etiketlenmiş orijinal UCI verisiyle (`column_3C.csv`) ayrıca eğitiliyor. Az örnekli Disk Hernisi sınıfının test setinde yeterince temsil edilmesi için train/test ayrımı `stratify=y` ile yapılıyor.
+
+| Algoritma | Test Doğruluğu (tek ayrım) | 5-Katlı Çapraz Doğrulama |
+| --- | --- | --- |
+| **SVM (Destek Vektör)** 🏆 | **%83.87** | %85.48 (± %2.70) |
+| Random Forest | %82.26 | %84.19 (± %4.38) |
+| KNN (En Yakın Komşu) | %82.26 | %82.90 (± %2.41) |
+
+Bu modda şampiyon model **SVM** oldu — 2 sınıflı modelden farklı bir algoritma seçilmesi, sınıf sayısı arttıkça (ve bir sınıf az örnekli olduğunda) hangi algoritmanın daha iyi genelleştirdiğinin değişebileceğini gösteriyor.
+
 ## Teknolojiler
 
 | Katman | Teknoloji |
@@ -64,7 +77,7 @@ venv\Scripts\activate        # Windows
 pip install -r requirements.txt
 ```
 
-Model dosyaları (`fiziktedavi_model.pkl`, `model_skorlari.pkl`) depoda hazır geliyor; uygulamayı doğrudan çalıştırabilirsiniz:
+Model dosyaları (`fiziktedavi_model.pkl`, `model_skorlari.pkl`, `fiziktedavi_model_3sinif.pkl`, `model_skorlari_3sinif.pkl`) depoda hazır geliyor; uygulamayı doğrudan çalıştırabilirsiniz:
 
 ```bash
 streamlit run app.py
@@ -84,8 +97,11 @@ ortopedik-anomali-tespit/
 ├── model_egit.py          # Veriyi okuyup 3 algoritmayı eğiten, en iyisini kaydeden betik
 ├── toplu_tahmin.py        # CSV ile toplu tahmin için yardımcı fonksiyonlar (pytest ile test edilir)
 ├── column_2C.csv          # Vertebral Column veri seti (310 kayıt)
+├── column_3C.csv          # Vertebral Column veri seti (3 sınıflı: Normal/Disk Hernisi/Spondilolistezis)
 ├── fiziktedavi_model.pkl  # Eğitilmiş en iyi model (KNN)
+├── fiziktedavi_model_3sinif.pkl  # Eğitilmiş en iyi model (3 sınıflı, SVM)
 ├── model_skorlari.pkl     # Üç algoritmanın test başarı oranları
+├── model_skorlari_3sinif.pkl     # Üç algoritmanın 3 sınıflı veri üzerindeki test başarı oranları
 ├── requirements.txt
 ├── .gitignore
 └── docs/screenshots/      # README'deki ekran görüntüleri
@@ -100,7 +116,6 @@ ortopedik-anomali-tespit/
 ## Geliştirme fikirleri
 
 - Görsel özelliklerin (banner, anatomi referans görseli) eklenmesi
-- 3 sınıflı veri setine (Normal / Disk Hernisi / Spondilolistezis) geçiş
 - Tahmine hangi ölçümün ne kadar etki ettiğini gösteren açıklanabilirlik (feature importance) grafiği
 - `pytest` ile modelin temel sağlık kontrollerinin (ör. bilinen bir girdi için beklenen sınıfı döndürmesi) test edilmesi
 - GitHub Actions ile testlerin her push'ta otomatik çalıştırılması

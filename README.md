@@ -4,7 +4,7 @@ Makine öğrenmesi destekli bir **karar destek sistemi (KDS)**: hastaların rady
 
 > *English:* A machine-learning decision-support system that classifies spinal condition (Normal / Abnormal) from biomechanical measurements, built with scikit-learn and an interactive Streamlit UI.
 
-🔗 **Canlı demo:** _(bkz. "Dağıtım" bölümü — Streamlit Community Cloud'a yayınlandıktan sonra buraya eklenecek)_
+🔗 **Canlı demo:** https://ortopedik-anomali-tespit.streamlit.app/
 
 ![Tahmin ekranı](docs/screenshots/tahmin-sistemi.png)
 

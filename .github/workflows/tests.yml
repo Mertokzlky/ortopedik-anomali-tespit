@@ -1,0 +1,34 @@
+name: Testler
+
+# Her push ve pull request'te otomatik çalışır (main branch'e).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Depoyu indir
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Bağımlılıkları yükle
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Modelleri eğit
+        # Depoda zaten .pkl dosyaları var, ama CI'da sıfırdan eğitmek
+        # model_egit.py'nin bozulmadığını da ayrıca doğrulamış oluyor.
+        run: python model_egit.py
+
+      - name: Testleri çalıştır
+        run: pytest tests/ -v

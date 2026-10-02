@@ -8,6 +8,9 @@ venv/
 .venv/
 env/
 
+# Test
+.pytest_cache/
+
 # Streamlit
 .streamlit/secrets.toml
 

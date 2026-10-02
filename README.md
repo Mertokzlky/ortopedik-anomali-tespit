@@ -1,10 +1,12 @@
 # 🏥 Ortopedik Anomali Tespit Sistemi
 
+[![Testler](https://github.com/mertokzlky/ortopedik-anomali-tespit/actions/workflows/tests.yml/badge.svg)](https://github.com/mertokzlky/ortopedik-anomali-tespit/actions/workflows/tests.yml)
+
 Makine öğrenmesi destekli bir **karar destek sistemi (KDS)**: hastaların radyolojik ölçümlerinden (pelvik açılar, lomber lordoz vb.) yola çıkarak omurga yapısını **Normal** ya da **Anormal** (bel fıtığı / spondilolistezis riski) olarak sınıflandırır. Arayüz [Streamlit](https://streamlit.io) ile geliştirilmiştir.
 
 > *English:* A machine-learning decision-support system that classifies spinal condition (Normal / Abnormal) from biomechanical measurements, built with scikit-learn and an interactive Streamlit UI.
 
-🔗 **Canlı demo:** _(bkz. "Dağıtım" bölümü — Streamlit Community Cloud'a yayınlandıktan sonra buraya eklenecek)_
+🔗 **Canlı demo:** https://ortopedik-anomali-tespit.streamlit.app/
 
 ![Tahmin ekranı](docs/screenshots/tahmin-sistemi.png)
 
@@ -16,6 +18,7 @@ Makine öğrenmesi destekli bir **karar destek sistemi (KDS)**: hastaların rady
 - 🔥 **Korelasyon matrisi:** özellikler arasındaki ilişkiyi ısı haritasıyla gösterir
 - 🧩 **Karmaşıklık matrisi (confusion matrix):** modelin doğru/yanlış tahmin dağılımı
 - ⚙️ **3 algoritma karşılaştırması:** Random Forest, SVM ve KNN eğitilip test başarıları karşılaştırılır
+- ✅ **Otomatik testler:** `pytest` ile 22 test (veri doğrulama, toplu tahmin, model sağlık kontrolleri); her push'ta GitHub Actions ile otomatik çalışır
 - 🔍 **Açıklanabilirlik:** Permutation Importance yöntemiyle hangi ölçümün tahmine ne kadar etki ettiğini gösteren grafik (KNN/SVM gibi modellerde de çalışır)
 - 🔀 **2 sınıf / 3 sınıf modu:** kullanıcı, Normal/Anormal (2 sınıf) veya Normal/Disk Hernisi/Spondilolistezis (3 sınıf) modelleri arasında geçiş yapabilir; tüm sekmeler (tahmin, analiz, toplu tahmin) seçilen moda göre çalışır
 - 📁 **Toplu tahmin:** birden fazla hastanın verisini içeren bir CSV dosyası yükleyip hepsi için aynı anda tahmin alma, sonuçları CSV olarak indirme
@@ -108,6 +111,19 @@ ortopedik-anomali-tespit/
 └── docs/screenshots/      # README'deki ekran görüntüleri
 ```
 
+
+## Testler
+
+Proje, `pytest` ile yazılmış 22 testle korunuyor: `tests/test_toplu_tahmin.py` CSV okuma/doğrulama mantığını, `tests/test_model.py` ise eğitilmiş modellerin bilinen girdiler için beklenen sınıfı döndürüp döndürmediğini kontrol ediyor. Her `push` ve `pull request`'te [GitHub Actions](.github/workflows/tests.yml) üzerinden otomatik çalışıyor (modeller sıfırdan eğitilip testler ona karşı koşuluyor).
+
+Yerelde çalıştırmak için:
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+python model_egit.py   # .pkl dosyalarını oluşturur
+pytest tests/ -v
+```
+
 ## Dağıtım (Streamlit Community Cloud)
 
 1. [share.streamlit.io](https://share.streamlit.io) adresine GitHub hesabınızla giriş yapın.
@@ -117,8 +133,6 @@ ortopedik-anomali-tespit/
 ## Geliştirme fikirleri
 
 - Görsel özelliklerin (banner, anatomi referans görseli) eklenmesi
-- `pytest` ile modelin temel sağlık kontrollerinin (ör. bilinen bir girdi için beklenen sınıfı döndürmesi) test edilmesi
-- GitHub Actions ile testlerin her push'ta otomatik çalıştırılması
 
 ## Sorumluluk reddi
 
@@ -128,3 +142,4 @@ Bu proje bir üniversite dersi kapsamında geliştirilmiş akademik bir çalış
 
 **Mert Ali Kızılkaya** — Yazılım Mühendisliği öğrencisi
 GitHub: [@mertokzlky](https://github.com/mertokzlky)
+

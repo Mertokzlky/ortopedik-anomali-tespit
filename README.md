@@ -28,6 +28,10 @@ Makine öğrenmesi destekli bir **karar destek sistemi (KDS)**: hastaların rady
 | --- | --- |
 | ![Tahmin sonucu](docs/screenshots/tahmin-sonucu.png) | ![Korelasyon matrisi](docs/screenshots/korelasyon-matrisi.png) |
 
+| Toplu tahmin (3 sınıf) | Özellik önemi (açıklanabilirlik) |
+| --- | --- |
+| ![Toplu tahmin](docs/screenshots/toplu-tahmin.png) | ![Özellik önemi](docs/screenshots/ozellik-onemi.png) |
+
 ## Veri seti ve kaynak
 
 - **Veri seti:** [Vertebral Column Dataset](https://www.kaggle.com/datasets/caesarlupum/vertebralcolumndataset) (Kaggle üzerinden, orijinal kaynak: UCI Machine Learning Repository / Dr. Henrique da Mota)
@@ -106,11 +110,13 @@ ortopedik-anomali-tespit/
 ├── fiziktedavi_model_3sinif.pkl  # Eğitilmiş en iyi model (3 sınıflı, SVM)
 ├── model_skorlari.pkl     # Üç algoritmanın test başarı oranları
 ├── model_skorlari_3sinif.pkl     # Üç algoritmanın 3 sınıflı veri üzerindeki test başarı oranları
+├── tests/                 # pytest testleri (22 test)
+├── .github/workflows/     # GitHub Actions (her push'ta testleri otomatik çalıştırır)
 ├── requirements.txt
+├── requirements-dev.txt   # Sadece test için gereken paketler (pytest)
 ├── .gitignore
 └── docs/screenshots/      # README'deki ekran görüntüleri
 ```
-
 
 ## Testler
 
